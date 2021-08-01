@@ -59,7 +59,7 @@ def get_random_ua():
                   )
     return ua
 
-def get_douban_works(num):
+def get_douban_works(num, ck):
     num_norm = (num-1)*25
     douban_url = 'https://www.douban.com/group/698716/discussion?start='+str(num_norm)
     # try:
@@ -71,11 +71,20 @@ def get_douban_works(num):
     Random_UA = get_random_ua()
     print("生成随机UA：", Random_UA)
 
-    headers = {
-        'Accept-Language': 'zh-CN,zh;q=0.9,zh-TW;q=0.8,ja;q=0.7',
-        'Connection': 'keep-alive',
-        'User-Agent': Random_UA
-    }
+    if num<=8:
+        headers = {
+            'Accept-Language': 'zh-CN,zh;q=0.9,zh-TW;q=0.8,ja;q=0.7',
+            'Connection': 'keep-alive',
+            'User-Agent': Random_UA
+        }
+    else:
+        headers = {
+            'Accept-Language': 'zh-CN,zh;q=0.9,zh-TW;q=0.8,ja;q=0.7',
+            'Connection': 'keep-alive',
+            'User-Agent': Random_UA,
+            'Cookie' : ck
+        }
+    
     douban_res = requests.get(douban_url, headers=headers)
     pattern1 = re.compile(r'<td class="title">(.*?)</td>', re.S | re.M)
     rowinfo = pattern1.findall(douban_res.text)
@@ -85,11 +94,11 @@ def get_douban_works(num):
             work_list.append(item)
     return work_list
 
-def get_final_works(page_num):
+def get_final_works(page_num, ck):
     work_total_list = []
     for i in range(page_num):
         print("Get Page:", i+1)
-        work_total_list.extend(get_douban_works(i))
+        work_total_list.extend(get_douban_works(i,ck))
         time.sleep(3)
     return {}.fromkeys(work_total_list).keys()
 
@@ -100,7 +109,7 @@ def choose_work(list, key_list):
     work_to_send = []
     for item in list:
         for key in key_list:
-            if key in item:
+            if key in item.lower():
                 topic = pattern_title.findall(item)[0]
                 if topic in data:
                     print("作业已经存在不推送：", topic)
@@ -155,6 +164,9 @@ if __name__ == '__main__':
     if "DOUBAN_barkkey" in os.environ:
         DOUBAN_barkkey = os.environ["DOUBAN_barkkey"]
         print("已获取并使用Env环境，DOUBAN_barkkey=", DOUBAN_barkkey)
+    if "DOUBAN_cookie" in os.environ:
+        DOUBAN_cookie = os.environ["DOUBAN_cookie"]
+        print("已获取并使用Env环境，DOUBAN_cookie=", DOUBAN_cookie)
 
     filename = 'douban_work.txt'
     if os.path.exists(os.getcwd()+'/'+filename)==False:
@@ -163,6 +175,6 @@ if __name__ == '__main__':
         file.close()
 
 
-    final_work = get_final_works(DOUBAN_page)
+    final_work = get_final_works(DOUBAN_page, DOUBAN_cookie)
     final_send = choose_work(final_work, DOUBAN_Keyword)
     send_nofity(final_send, DOUBAN_barkkey)
