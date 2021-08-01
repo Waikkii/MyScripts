@@ -6,6 +6,11 @@ import re
 import time
 import os
 
+# Env环境设置 通知服务
+# export DOUBAN_Keyword='[xx,xx,x,xxx]'             # 检索关键词;
+# export DOUBAN_page='x'                            # 豆瓣小组检索页数（过多可能被封ip）;
+# export DOUBAN_barkkey='xxxxxxxxxxxxx'             # bark服务,苹果商店自行搜;
+
 
 def get_high_stash_IPs():
     ip_num = 30
