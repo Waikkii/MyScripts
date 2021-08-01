@@ -6,11 +6,6 @@ import re
 import time
 import os
 
-# Env环境设置 通知服务
-# export DOUBAN_Keyword='[xx,xx,x,xxx]'             # 检索关键词;
-# export DOUBAN_page='x'                            # 豆瓣小组检索页数（过多可能被封ip）;
-# export DOUBAN_barkkey='xxxxxxxxxxxxx'             # bark服务,苹果商店自行搜;
-
 
 def get_high_stash_IPs():
     ip_num = 30
@@ -115,9 +110,11 @@ def choose_work(list, key_list):
     return work_to_send
 
 def bark_post(Subject, Message, Sckey):
-    url = 'https://api.day.app/' + Sckey + '/' + Subject + '?url=' + Message
-    print(url)
-    r = requests.get(url)
+    Sckey_list = Sckey.split('&')
+    for i in range(len(Sckey_list)):
+        url = 'https://api.day.app/' + Sckey_list[i] + '/' + Subject + '?url=' + Message
+        print(url)
+        requests.get(url)
 
 def send_nofity(list, sendkey):
     if list==[]:
