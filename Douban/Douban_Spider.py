@@ -11,6 +11,7 @@ import os
 # export DOUBAN_Keyword='xx@xx@x@xxx'                              # 检索关键词，使用@连接;
 # export DOUBAN_page='x'                                           # 豆瓣小组检索页数（过多可能被封ip）;
 # export DOUBAN_barkkey='xxxxxxxxxxxxx$xxxxxxxxxxxxxx'             # bark服务,苹果商店自行搜，支持多个用户推送;
+# 建议cron */15 * * * *
 
 def get_high_stash_IPs():
     ip_num = 30
