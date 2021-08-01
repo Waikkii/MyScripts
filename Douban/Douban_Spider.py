@@ -7,7 +7,7 @@ import time
 import os
 
 # Env环境设置 通知服务
-# export DOUBAN_cookie='xxxxxxxxxxxxxx'             # （少于8页不需要）豆瓣cookie，自行登录抓包;
+# export DOUBAN_cookie='xxxxxxxxxxxxxx'             # （<=8页不需要）豆瓣cookie，自行登录抓包;
 # export DOUBAN_Keyword='[xx,xx,x,xxx]'             # 检索关键词;
 # export DOUBAN_page='x'                            # 豆瓣小组检索页数（过多可能被封ip）;
 # export DOUBAN_barkkey='xxxxxxxxxxxxx'             # bark服务,苹果商店自行搜;
