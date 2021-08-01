@@ -65,9 +65,9 @@ def get_random_ua():
                   )
     return ua
 
-def get_douban_works(num, ck):
+def get_douban_works(num, groupnumber, ck):
     num_norm = (num-1)*25
-    douban_url = 'https://www.douban.com/group/698716/discussion?start='+str(num_norm)
+    douban_url = 'https://www.douban.com/group/'+groupnumber+'/discussion?start='+str(num_norm)
     # try:
     #     Random_UA = UserAgent().random
     # except:
@@ -75,6 +75,7 @@ def get_douban_works(num, ck):
 
     # Random_UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.164 Safari/537.36'
     Random_UA = get_random_ua()
+    print('Page Group:', groupnumber)
     print("生成随机UA：", Random_UA)
 
     if num<=8:
@@ -104,7 +105,9 @@ def get_final_works(page_num, ck):
     work_total_list = []
     for i in range(page_num):
         print("Get Page:", i+1)
-        work_total_list.extend(get_douban_works(i,ck))
+        work_total_list.extend(get_douban_works(i,'698716', ck))
+        time.sleep(3)
+        work_total_list.extend(get_douban_works(i,'what2buy', ck))
         time.sleep(3)
     return {}.fromkeys(work_total_list).keys()
 
