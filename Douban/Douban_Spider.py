@@ -128,10 +128,9 @@ def send_nofity(list, sendkey):
         hrefurl = pattern_href.findall(item)[0]
         print(topic)
         print(hrefurl)
-        bark_post(topic, hrefurl, sendkey)
+        bark_post(topic.replace('/', ''), hrefurl, sendkey)
         print("推送成功！")
         with open('douban_work.txt', 'r+',newline='',encoding='utf-8') as f:
-            content = f.read()
             f.seek(0, 2)
             f.write(topic + '\n')
         print("写入数据成功！")
