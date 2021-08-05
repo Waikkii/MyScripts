@@ -120,6 +120,7 @@ def get_final_works(page_num):
         time.sleep(5)
         work_total_list.extend(get_douban_works(i,'what2buy'))
         time.sleep(5)
+    print("Total works:", len(work_total_list))
     return {}.fromkeys(work_total_list).keys()
 
 
@@ -202,6 +203,7 @@ def get_final_works_from_API(page_num):
         # time.sleep(5)
         work_total_list.extend(get_douban_works_from_API(i,'what2buy'))
         time.sleep(5)
+    print("Total works:", len(work_total_list))
     return {}.fromkeys(work_total_list).keys()
 
 def choose_work_from_API(list, key_list):
