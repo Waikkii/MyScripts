@@ -29,7 +29,7 @@ def check_ip(proxy_ip):
         proxyIP = res.text[0:-1]
         # print(proxyIP, proxy_ip['https'].split('//')[1].split(':')[0])
         if (proxyIP == proxy_ip['http'].split('//')[1].split(':')[0]):
-            print("Proxy IP:" + proxyIP + " success!")
+            print("Proxy IP:" + proxy_ip['http'].split('//')[1] + " success!")
             return True
         else:
             print("Check: Proxy IP failure!")
