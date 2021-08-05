@@ -7,11 +7,14 @@ import os
 import string
 
 # Env环境设置 通知服务
-# export DOUBAN_cookie='xxxxxxxxxxxxxx'                            # （少于8页不需要）豆瓣cookie，自行登录抓包;
+# export DOUBAN_CK='xxxxxxxxxxxxxx'                                # （少于8页不需要）豆瓣cookie，自行登录抓包，最好使用不然很容易被检测同一IP;
 # export DOUBAN_Keyword='xx@xx@x@xxx'                              # 检索关键词，使用@连接;
 # export DOUBAN_page='x'                                           # 豆瓣小组检索页数（过多可能被封ip）;
-# export DOUBAN_barkkey='xxxxxxxxxxxxx$xxxxxxxxxxxxxx'             # bark服务,苹果商店自行搜，支持多个用户推送;
+# export DOUBAN_barkkey='xxxxxxxxxxxxx@xxxxxxxxxxxxxx'             # bark服务,苹果商店自行搜，支持多个用户推送;
 # export DOUBAN_IP='ip:port/get'                                   # ip代理池（如果不需要可以自行修改line 98/99）;
+# export DOUBAN_APIKEY="xxxxxxxxxxxxxxxxxxx"                       # APIKEY善用搜索;
+# export DOUBAN_is_point_ck="False"                                # 是否指定CK，不指定将使用随机生成的CK;
+# export DOUBAN_is_API="False"                                     # 是否使用API方式，不使用将使用爬虫的方式;
 # 建议cron */30 * * * *
 
 def get_ip_json(ip):
@@ -45,7 +48,7 @@ def get_high_stash_IP():
         # print("In While:", ip)
         if check_ip(ip) == True:
             break
-        time.sleep(3)
+        time.sleep(1)
     return ip
 
 def get_random_ua():
@@ -80,11 +83,9 @@ def get_douban_works(num, groupnumber):
     print('Page Group:', groupnumber)
     print("生成随机UA：", Random_UA)
 
-    if "DOUBAN_CK" in os.environ:
-        DOUBAN_CK = os.environ["DOUBAN_CK"]
-        # print("已获取并使用Env环境，DOUBAN_CK=", DOUBAN_CK)
+    if DOUBAN_is_point_ck == "True":
         print("使用指定CK：", DOUBAN_CK)
-    else:
+    elif DOUBAN_is_point_ck == "False":
         print("使用随机CK：", Random_CK)
 
     headers = {
@@ -121,6 +122,7 @@ def get_final_works(page_num):
         time.sleep(5)
     return {}.fromkeys(work_total_list).keys()
 
+
 def choose_work(list, key_list):
     pattern_title = re.compile(r'title="(.*?)" class="">', re.S | re.M)
     with open("douban_work.txt", "r", encoding='utf-8') as f:  # 打开文件
@@ -136,11 +138,6 @@ def choose_work(list, key_list):
                     work_to_send.append(item)
                     break
     return work_to_send
-
-def bark_post(Subject, Message, Sckey):
-    url = 'https://api.day.app/' + Sckey + '/' + Subject + '?url=' + Message
-    print(url)
-    r = requests.get(url)
 
 def send_nofity(list, sendkey):
     if list==[]:
@@ -163,8 +160,100 @@ def send_nofity(list, sendkey):
         print("写入数据成功！")
         time.sleep(5)
     return
+
+
+### 以下为调用api情况
+
+def get_douban_works_from_API(num, groupnumber):
+    num_norm = num*100
+    douban_url = 'https://api.douban.com/v2/group/' + groupnumber + '/topics?start=' + str(num_norm) + '&count=100&apikey=' + DOUBAN_APIKEY
+    Random_UA = get_random_ua()
+    Random_CK = get_random_ck()
+    print("API url:", douban_url)
+    print('Page Group:', groupnumber)
+    print("生成随机UA：", Random_UA)
+
+    if DOUBAN_is_point_ck == "True":
+        print("使用指定CK：", DOUBAN_CK)
+    elif DOUBAN_is_point_ck == "False":
+        print("使用随机CK：", Random_CK)
+
+    headers = {
+        'Connection': 'keep-alive',
+        'Cookie' : Random_CK,
+        'User-Agent': Random_UA,
+    }
+
+    proxy_IP = get_high_stash_IP()
+    douban_res = requests.get(douban_url, headers=headers, proxies=proxy_IP)
+
+    rowinfo = douban_res.json()["topics"]
+    work_list = []
+    for item in rowinfo:
+        if "【作业】" in item["title"]:
+            work_list.append(item["title"]+'<>'+item["alt"])
+    return work_list
+
+def get_final_works_from_API(page_num):
+    work_total_list = []
+    for i in range(page_num):
+        print("Get Page:", i+1)
+        # work_total_list.extend(get_douban_works_from_API(i,'698716')) #小组id为数字暂时无法解决
+        # time.sleep(5)
+        work_total_list.extend(get_douban_works_from_API(i,'what2buy'))
+        time.sleep(5)
+    return {}.fromkeys(work_total_list).keys()
+
+def choose_work_from_API(list, key_list):
+    with open("douban_work.txt", "r", encoding='utf-8') as f:  # 打开文件
+        data = f.read()
+    work_to_send = []
+    for item in list:
+        for key in key_list:
+            if key in item:
+                topic = item.split("<>")[0]
+                if topic in data:
+                    print("作业已经存在不推送：", topic)
+                else:
+                    work_to_send.append(item)
+                    break
+    return work_to_send
+
+def send_nofity_from_API(list, sendkey):
+    if list==[]:
+        print("无作业！退出")
+        return
+    for item in list:
+        print("===============================================")
+        topic = item.split("<>")[0]
+        hrefurl = item.split("<>")[-1]
+        print(topic)
+        print(hrefurl)
+        bark_post(topic, hrefurl, sendkey)
+        print("推送成功！")
+        with open('douban_work.txt', 'r+',newline='',encoding='utf-8') as f:
+            content = f.read()
+            f.seek(0, 2)
+            f.write(topic + '\n')
+        print("写入数据成功！")
+        time.sleep(5)
+    return
+
+
+
+
+def bark_post(Subject, Message, SckeyStr):
+    Sckey_list = SckeyStr.split('@')
+    for item in Sckey_list:
+        url = 'https://api.day.app/' + item + '/' + Subject + '?url=' + Message
+        print(url)
+        r = requests.get(url)
+
  
 if __name__ == '__main__':
+    if "DOUBAN_CK" in os.environ:
+        DOUBAN_CK = os.environ["DOUBAN_CK"]
+        print("已获取并使用Env环境，DOUBAN_CK=", DOUBAN_CK)
     if "DOUBAN_Keyword" in os.environ:
         DOUBAN_Keyword = os.environ["DOUBAN_Keyword"]
         DOUBAN_Keyword = DOUBAN_Keyword.split('@')
@@ -178,6 +267,18 @@ if __name__ == '__main__':
     if "DOUBAN_IP_GET" in os.environ:
         DOUBAN_IP_GET = os.environ["DOUBAN_IP_GET"]
         print("已获取并使用Env环境，DOUBAN_IP_GET=", DOUBAN_IP_GET)
+    if "DOUBAN_APIKEY" in os.environ:
+        DOUBAN_APIKEY = os.environ["DOUBAN_APIKEY"]
+        print("已获取并使用Env环境，DOUBAN_APIKEY=", DOUBAN_APIKEY)
+
+    if "DOUBAN_is_point_ck" in os.environ:
+        DOUBAN_is_point_ck = os.environ["DOUBAN_is_point_ck"]
+        print("已获取并使用Env环境，DOUBAN_is_point_ck=", DOUBAN_is_point_ck)
+    if "DOUBAN_is_API" in os.environ:
+        DOUBAN_is_API = os.environ["DOUBAN_is_API"]
+        print("已获取并使用Env环境，DOUBAN_is_API=", DOUBAN_is_API)
+
+    
 
     filename = 'douban_work.txt'
     if os.path.exists(os.getcwd()+'/'+filename)==False:
@@ -185,7 +286,15 @@ if __name__ == '__main__':
         file = open('./douban_work.txt', "w")
         file.close()
 
-
-    final_work = get_final_works(DOUBAN_page)
-    final_send = choose_work(final_work, DOUBAN_Keyword)
-    send_nofity(final_send, DOUBAN_barkkey)
+    #个人建议最好使用API调用，没有APIkey的话使用第一个函数
+    
+    if DOUBAN_is_API == "True":
+        print("使用API接口获取作业")
+        final_work = get_final_works_from_API(DOUBAN_page)
+        final_send = choose_work_from_API(final_work, DOUBAN_Keyword)
+        send_nofity_from_API(final_send, DOUBAN_barkkey)
+    elif DOUBAN_is_API == "False":
+        print("未找到APIKEY环境变量，使用网页爬虫获取作业")
+        final_work = get_final_works(DOUBAN_page)
+        final_send = choose_work(final_work, DOUBAN_Keyword)
+        send_nofity(final_send, DOUBAN_barkkey)
