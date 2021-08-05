@@ -80,10 +80,10 @@ def get_douban_works(num, groupnumber):
     print('Page Group:', groupnumber)
     print("生成随机UA：", Random_UA)
 
-    if "DOUBAN_cookie" in os.environ:
-        DOUBAN_cookie = os.environ["DOUBAN_cookie"]
-        # print("已获取并使用Env环境，DOUBAN_cookie=", DOUBAN_cookie)
-        print("使用指定CK：", DOUBAN_cookie)
+    if "DOUBAN_CK" in os.environ:
+        DOUBAN_CK = os.environ["DOUBAN_CK"]
+        # print("已获取并使用Env环境，DOUBAN_CK=", DOUBAN_CK)
+        print("使用指定CK：", DOUBAN_CK)
     else:
         print("使用随机CK：", Random_CK)
 
