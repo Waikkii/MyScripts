@@ -38,6 +38,18 @@ def check_ip(proxy_ip):
         print("ERROR: Proxy IP failure!", e)
         return False
 
+def check_ip_if_high_anonymous(proxy_ip):
+    check_url = 'http://httpbin.org/ip'
+    headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.102 Safari/537.36'}
+    res_status = requests.get(check_url, headers=headers, proxies=proxy_ip, timeout=3).json()["origin"].split(', ')
+    if len(res_status)==2:
+        print("Proxy IP为普通透明IP")
+    else:
+        if res_status[0]==proxy_ip:
+            print("Proxy IP为高度匿名IP！！！！！！")
+        else:
+            print("Proxy IP不起作用")
+
 # 高匿代理一定需要
 def get_high_stash_IP():
     ip_url = DOUBAN_IP_GET
@@ -47,6 +59,7 @@ def get_high_stash_IP():
         ip =  get_ip_json(get_json["proxy"])
         # print("In While:", ip)
         if check_ip(ip) == True:
+            check_ip_if_high_anonymous(ip)
             break
         time.sleep(1)
     return ip
