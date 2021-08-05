@@ -247,7 +247,7 @@ def send_nofity_from_API(list, sendkey):
 def bark_post(Subject, Message, SckeyStr):
     Sckey_list = SckeyStr.split('@')
     for item in Sckey_list:
-        url = 'https://api.day.app/' + item + '/' + Subject + '?url=' + Message
+        url = 'https://api.day.app/' + item + '/' + Subject.replace('/', ' ') + '?url=' + Message
         print(url)
         r = requests.get(url)
 
