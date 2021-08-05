@@ -191,7 +191,7 @@ def get_douban_works_from_API(num, groupnumber):
     rowinfo = douban_res.json()["topics"]
     work_list = []
     for item in rowinfo:
-        if "【作业】" in item["title"] | "【作业】" in item["content"]:
+        if ("【作业】" in item["title"]) | ("【作业】" in item["content"]):
             work_list.append(item["title"]+'<>'+item["alt"])
     return work_list
 
