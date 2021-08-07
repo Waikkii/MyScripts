@@ -199,12 +199,22 @@ def get_douban_works_from_API(num, groupnumber):
         'User-Agent': Random_UA,
     }
 
-    proxy_IP = get_high_stash_IP()
-    douban_res = requests.get(douban_url, headers=headers, proxies=proxy_IP)
+    try:
+        proxy_IP = get_high_stash_IP()
+        douban_res = requests.get(douban_url, headers=headers, proxies=proxy_IP)
+        print("已使用ProxyIP")
+    except:
+        douban_res = requests.get(douban_url, headers=headers)
+        print("不使用ProxyIP")
+
+    try:
+        if douban_res.json()["localized_message"]=="???":
+            print("???退出")
+            return []
+    except:
+        pass
 
     rowinfo = douban_res.json()["topics"]
-    if rowinfo["localized_message"]=="???":
-        return []
     print("Pages: ", num, " Topics:", len(rowinfo))
     work_list = []
     for item in rowinfo:
