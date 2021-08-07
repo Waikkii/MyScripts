@@ -119,6 +119,7 @@ def get_douban_works(num, groupnumber):
     else:
         pattern1 = re.compile(r'<td class="title">(.*?)</td>', re.S | re.M)
         rowinfo = pattern1.findall(douban_res.text)
+        print("Pages: ", num, " Topics:", len(rowinfo))
         work_list = []
         for item in rowinfo:
             if "【作业】" in item:
@@ -202,6 +203,9 @@ def get_douban_works_from_API(num, groupnumber):
     douban_res = requests.get(douban_url, headers=headers, proxies=proxy_IP)
 
     rowinfo = douban_res.json()["topics"]
+    if rowinfo["localized_message"]=="???":
+        return []
+    print("Pages: ", num, " Topics:", len(rowinfo))
     work_list = []
     for item in rowinfo:
         if ("【作业】" in item["title"]) | ("【作业】" in item["content"]):
